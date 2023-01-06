@@ -35,11 +35,20 @@ class Conference extends React.Component {
     this.state = {
       classes: props,
       selectedKey: selectedKey || props.conference.defaultItem,
+      language: props.language || Setting.getLanguage(),
     };
   }
 
   componentDidMount() {
     this.updateSelectedKey();
+
+    if (this.props.language === undefined || this.props.language === null) {
+      Setting.onLanguageChange(language => {
+        this.setState({
+          language,
+        });
+      });
+    }
   }
 
   componentDidUpdate() {
@@ -47,6 +56,9 @@ class Conference extends React.Component {
   }
 
   shouldComponentUpdate(nextProp, nextState) {
+    if (nextState.language !== this.state.language) {
+      return true;
+    }
     if (nextState.selectedKey !== this.state.selectedKey || nextProp.conference !== this.props.conference) {
 
       const selectedTreeItem = this.getSelectedTreeItem(nextState.selectedKey, nextProp.conference.treeItems);
@@ -110,23 +122,28 @@ class Conference extends React.Component {
             //   return null;
             // }
 
+            const key = treeItem.titleEn;
+
             if (treeItem.children.length === 0) {
               return (
-                <Menu.Item key={treeItem.title} onClick={this.updateSelectedKey.bind(this)}>
-                  <Link to={`${this.props.path}${treeItem.title}`}>
-                    {this.props.language !== "en" ? treeItem.title : treeItem.titleEn}
+                <Menu.Item key={key} onClick={this.updateSelectedKey.bind(this)}>
+                  <Link to={`${this.props.path}${key}`}>
+                    {this.state.language !== "en" ? treeItem.title : treeItem.titleEn}
                   </Link>
                 </Menu.Item>
               );
             } else {
               return (
-                <SubMenu key={treeItem.title} title={this.props.language !== "en" ? treeItem.title : treeItem.titleEn}>
+                <SubMenu key={key} title={this.state.language !== "en" ? treeItem.title : treeItem.titleEn}>
                   {
                     treeItem.children.map((treeItem2, i) => {
+
+                      const key2 = treeItem2.titleEn;
+
                       return (
                         <Menu.Item key={treeItem2.title} onClick={this.updateSelectedKey.bind(this)}>
-                          <Link to={`${this.props.path}${treeItem.title}/${treeItem2.title}`}>
-                            {this.props.language !== "en" ? treeItem2.title : treeItem2.titleEn}
+                          <Link to={`${this.props.path}${key}/${key2}`}>
+                            {this.state.language !== "en" ? treeItem2.title : treeItem2.titleEn}
                           </Link>
                         </Menu.Item>
                       );
@@ -178,7 +195,7 @@ class Conference extends React.Component {
     }
 
     const res = treeItems.map(treeItem => {
-      if (treeItem.title === selectedKey) {
+      if (treeItem.titleEn === selectedKey) {
         return treeItem;
       } else {
         return this.getSelectedTreeItem(selectedKey, treeItem.children);
@@ -206,7 +223,7 @@ class Conference extends React.Component {
         {/*    treeItem.title*/}
         {/*  }*/}
         {/* </div>*/}
-        <div style={{marginTop: "40px"}} dangerouslySetInnerHTML={{__html: this.props.language !== "en" ? treeItem.content : treeItem.contentEn}} />
+        <div style={{marginTop: "40px"}} dangerouslySetInnerHTML={{__html: this.state.language !== "en" ? treeItem.content : treeItem.contentEn}} />
       </div>
     );
   }

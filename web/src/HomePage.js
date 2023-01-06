@@ -88,7 +88,6 @@ class HomePage extends React.Component {
         </div>
         <Conference
           conference={this.state.conference}
-          language={Setting.getLanguage()}
           history={this.props.history}
           path="/"
           enableMenuPath={true}
